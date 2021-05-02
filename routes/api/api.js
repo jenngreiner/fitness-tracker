@@ -12,7 +12,7 @@ router.post("/workouts", ({ body }, res) => {
     });
 });
 
-// Get all workouts
+// Get all workouts, and sort by most recent
 router.get("/workouts", (req, res) => {
   Workout.find({})
     .sort({ day: "asc" })
@@ -24,13 +24,14 @@ router.get("/workouts", (req, res) => {
     });
 });
 
-// Update a workout
+// Update a workout by ID
 router.put("/workouts/:id", (req, res) => {
   Workout.findByIdAndUpdate(
     req.params.id,
-    { $push: {
+    {
+      $push: {
         exercises: req.body,
-      }
+      },
     },
     { new: true }
   )
@@ -42,14 +43,15 @@ router.put("/workouts/:id", (req, res) => {
     });
 });
 
-// Get all workouts
-router.get("/workouts/range", (req, res) => { Workout.aggregate([
-  {
-    $addFields: {
-      totalDuration: { $sum: "$exercises.duration" },
+// Get workout dashboard using aggregate, addFields, and sum
+router.get("/workouts/range", (req, res) => {
+  Workout.aggregate([
+    {
+      $addFields: {
+        totalDuration: { $sum: "$exercises.duration" },
+      },
     },
-  },
-])
+  ])
     .then((dbWorkout) => {
       res.json(dbWorkout);
     })
